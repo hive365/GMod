@@ -5,7 +5,9 @@ CreateConVar("hive_start_tuned", 0, {FCVAR_ARCHIVE})
 CreateConVar("gmod_hive365radio_version", version, {FCVAR_REPLICATED,FCVAR_NOTIFY,FCVAR_DONTRECORD}, "Hive365 Radio Plugin Version");
 
 CreateConVar("hive_last_song", "")
+local hive_last_song = ""
 CreateConVar("hive_last_dj", "")
+local hive_last_dj = ""
 
 util.AddNetworkString("sendstuff")
 
@@ -209,20 +211,25 @@ function UpdateInfo()
         function (body, len, headers, code)
             data = util.JSONToTable(body)
             if data != nil then
-                temp_song = string.Replace(data.info.artist_song, "&amp;", "&")
-                temp_dj = string.Replace(data.info.title, "&amp;", "&")
+                temp_song = string.Trim(string.Replace(data.info.artist_song, "&amp;", "&"))
+                temp_dj = string.Trim(string.Replace(data.info.title, "&amp;", "&"))
                 
                 song = GetConVar("hive_last_song"):GetString()
                 dj = GetConVar("hive_last_dj"):GetString()
                 
-                if temp_dj != "" && temp_dj != dj then
+				new_dj = !((temp_dj =="") || (temp_dj == hive_last_dj) || (temp_dj == dj))
+				new_song = !((temp_song =="") || (temp_song == hive_last_song) || (temp_song == song))
+				
+                if new_dj then
                     RunConsoleCommand("hive_last_dj", temp_dj)
                     BroadChat("New DJ: " .. temp_dj)
+					hive_last_dj = temp_dj;
                 end
                 
-                if temp_song != "" && temp_song != song then
+                if new_song then
                     RunConsoleCommand("hive_last_song", temp_song)
                     BroadChat("New song: " .. temp_song)
+					hive_last_song = temp_song;
                 end
             end
         end,
