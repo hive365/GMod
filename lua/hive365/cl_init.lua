@@ -1,4 +1,4 @@
-local streamUrl = "http://stream.hive365.co.uk:8088/live"
+local streamUrl = "https://stream.hive365.radio/listen/hive365/radio.mp3"
 local Music
 
 local last_rated_song = CreateClientConVar("last_rated_song", "none", true, true)

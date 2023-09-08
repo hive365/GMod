@@ -1,5 +1,5 @@
 local pref = "[Hive365]"
-local version = "1.1"
+local version = "2.0.0"
 
 CreateConVar("hive_start_tuned", 0, {FCVAR_ARCHIVE})
 CreateConVar("gmod_hive365radio_version", version, {FCVAR_REPLICATED,FCVAR_NOTIFY,FCVAR_DONTRECORD}, "Hive365 Radio Plugin Version");
@@ -207,12 +207,18 @@ function FirstSpawn( ply )
 end
 
 function UpdateInfo()
-    http.Fetch("http://data.hive365.co.uk/stream/info.php",
+    http.Fetch("https://stream.hive365.radio/api/nowplaying_static/hive365.json",
         function (body, len, headers, code)
             data = util.JSONToTable(body)
             if data != nil then
-                temp_song = string.Trim(string.Replace(data.info.artist_song, "&amp;", "&"))
-                temp_dj = string.Trim(string.Replace(data.info.title, "&amp;", "&"))
+                temp_song_title = string.Trim(string.Replace(data.now_playing.song.title, "&amp;", "&"))
+                temp_song_artist = string.Trim(string.Replace(data.now_playing.song.artist, "&amp;", "&"))
+                temp_song = temp_song_artist .. " - " .. temp_song_title
+                if data.now_playing.streamer == "" then
+                    temp_dj = string.Trim("The Beekeeper :: Keepin' Ya Buzzin'")
+                else
+                    temp_dj = string.Trim(string.Replace(data.now_playing.streamer, "&amp;", "&"))
+                end    
                 
                 song = GetConVar("hive_last_song"):GetString()
                 dj = GetConVar("hive_last_dj"):GetString()

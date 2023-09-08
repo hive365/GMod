@@ -26,7 +26,7 @@ installation:
 3 type "gmod_hive365radio_version" in console/rcon to check install
 4 done!
 
-http://hive365.co.uk/
+https://hive365.radio
 
 changelog
 1.0 initial release
@@ -36,3 +36,5 @@ changelog
  - remember more things on mapchange
  - no more multiple open menus
  - hit return to send shout/req
+2.0
+ - Move to hive365.radio domain endpoints for stream data and player
