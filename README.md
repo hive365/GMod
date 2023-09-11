@@ -40,4 +40,6 @@ changelog
  - no more multiple open menus
  - hit return to send shout/req
 2.0
+ - Music will no longer break after a map cleanup
+3.0
  - Move to hive365.radio domain endpoints for stream data and player

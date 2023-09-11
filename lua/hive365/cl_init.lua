@@ -245,3 +245,19 @@ end
 -- end
  
 -- hook.Add("Think","BM - Clients - Key",KeyPress)
+
+
+hook.Add("PostCleanupMap", "CleanupFix", function()
+    if hive_tuned:GetBool() then
+        if rValid() then
+            Music:Play()
+        else
+            sound.PlayURL(streamUrl, "play", function(chan)
+                if chan !=nil then
+                    Music = chan
+                    Music:SetVolume(hive_volume:GetInt() / 100)
+                end
+            end)
+        end
+    end
+end)
