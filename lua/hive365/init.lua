@@ -1,13 +1,11 @@
 local pref = "[Hive365]"
-local version = "2.0.0"
+local version = "2.0" -- Bug-Fix
 
 CreateConVar("hive_start_tuned", 0, {FCVAR_ARCHIVE})
 CreateConVar("gmod_hive365radio_version", version, {FCVAR_REPLICATED,FCVAR_NOTIFY,FCVAR_DONTRECORD}, "Hive365 Radio Plugin Version");
 
 CreateConVar("hive_last_song", "")
-local hive_last_song = ""
 CreateConVar("hive_last_dj", "")
-local hive_last_dj = ""
 
 util.AddNetworkString("sendstuff")
 
