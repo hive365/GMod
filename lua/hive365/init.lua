@@ -247,32 +247,34 @@ hook.Add( "PlayerInitialSpawn", "playerInitialSpawn", FirstSpawn )
 function HiveRequest(req_type, user, data)
 	server_name = GetHostName()
     if req_type == "song" then
-        url = "https://backend.hive365.radio/rating/song"
-        body_tbl = {fields = {['type'] = { ['stringValue'] = data}, ['name'] = {['stringValue'] = user}, ['source'] = {['stringValue'] = server_name}}}
+        requrl = 'https://backend.hive365.radio/rating/song'
+        reqmethod = 'POST'
+        body_tbl = {['type'] = data, ['name'] = user, ['source'] = server_name}
     elseif req_type == "streamer" then
-        url = "https://backend.hive365.radio/rating/streamer"
-        body_tbl = {fields = {['name'] = {['stringValue'] = user}, ['source'] = {['stringValue'] = server_name}}}
+        requrl = 'https://backend.hive365.radio/rating/streamer'
+        reqmethod = 'POST'
+        body_tbl = {['name'] = user, ['source'] = server_name}
     elseif req_type == "songrequest" then
-        url = "https://backend.hive365.radio/songrequest"
-        body_tbl = {fields = {['name'] = {['stringValue'] = user}, ['source'] = {['stringValue'] = server_name}, ['songName'] = {['stringValue'] = data}}}
+        requrl = 'https://backend.hive365.radio/songrequest'
+        reqmethod = 'PUT'
+        body_tblds = {['name'] = user, ['source'] = server_name, ['songName'] = data}
     elseif req_type == "shoutout" then
-        url = "https://backend.hive365.radio/shoutout"
-        body_tbl = {fields = {['name'] = {['stringValue'] = user}, ['source'] = {['stringValue'] = server_name}, ['message'] = {['stringValue'] = data}}}
+        requrl = 'https://backend.hive365.radio/shoutout'
+        reqmethod = 'PUT'
+        body_tbl = {['name'] = user, ['source'] = server_name, ['message'] = data}
     end
 
     HTTP({
-        url,
-        method= "POST", 
-        headers= { 
-            ['Content-Type']= 'application/json'
-        },
+        url = requrl,
+        method = reqmethod,
+        headers = {['Content-Type'] = 'application/json'},
         success= function( code, body, headers ) 
-            print("IT WORKED " .. body)
+            print("REQUEST SENT. RETURN CODE: " .. code .. "\nREQUEST SENT: " ..util.TableToJSON(body_tbl) .. "\nBODY RECEIVED: " .. body)
         end, 
         failed = function( err ) 
             print("IT DIDNT WORK. URL was: "..url .."\n Error: " .. err)
         end,
-        body=util.TableToJSON(body_tbl)
+        body = util.TableToJSON(body_tbl)
     })
 end
 
