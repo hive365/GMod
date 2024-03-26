@@ -49,7 +49,7 @@ Command.new({"!choon", "!ch"}, "!choon (choon the current song)",
         if ply:GetInfo("last_rated_song")!=song then
             ply:ConCommand("last_rated_song \""..song.."\"")
             
-            HiveRequest("song_rate", ply:GetName(), 3)
+            HiveRequest("song", ply:GetName(), "CHOON")
             BroadChat(ply:GetName() .. " thinks that " .. song .. " is a banging Choon!")
         else
             SendChat(ply, "You have already rated this song")
@@ -60,10 +60,10 @@ Command.new({"!choon", "!ch"}, "!choon (choon the current song)",
 ),
 Command.new({"!poon", "!po"}, "!poon (poon the current song)",
     function(ply, params)
-        if ply:GetInfo("last_rated_song")!=song then
+        if ply:GetInfo("song")!=song then
             ply:ConCommand("last_rated_song \""..song.."\"")
             
-            HiveRequest("song_rate", ply:GetName(), 4)
+            HiveRequest("song_rate", ply:GetName(), "POON")
             BroadChat(ply:GetName() .. " thinks that " .. song .. " is a bit of a naff Poon!")
         else
             SendChat(ply, "You have already rated this song")
@@ -77,7 +77,7 @@ Command.new({"!djftw", "!ftw"}, "!djftw (Give the current DJ a FTW!)",
        if ply:GetInfo("last_rated_dj")!=dj then
             ply:ConCommand("last_rated_dj " .. dj)
             
-            HiveRequest("djrate", ply:GetName(), dj)
+            HiveRequest("streamer", ply:GetName())
             BroadChat(ply:GetName() .. " thinks " .. dj .. " is a banging DJ!")
         else
             SendChat(ply, "You have already rated this DJ");
@@ -116,7 +116,7 @@ Command.new({"!request", "!req"}, "!request <artist - song> (Request a song)",
             ntime = ptime+60*3
             if os.time() > ntime then
                 ply:ConCommand("time_req "..os.time())
-                HiveRequest("request", ply:GetName(), req)
+                HiveRequest("songrequest", ply:GetName(), req)
                 SendChat(ply, "Your request has been sent!")
             else
                 SendChat(ply, "You can't send any requests for "..ntime-os.time().." seconds");
@@ -245,28 +245,35 @@ hook.Add( "PlayerSay", "chatCommand", chatCommand )
 hook.Add( "PlayerInitialSpawn", "playerInitialSpawn", FirstSpawn )
 
 function HiveRequest(req_type, user, data)
-	server_name = enc(GetHostName())
-	username = enc(user)
-	
-	
-	url = ""
-	
-	if req_type == "song_rate" then
-		url = "http://hive365.co.uk/plugin/" ..
-				req_type .. ".php?" ..
-				"n=" .. username ..
-				"&t=" .. data ..
-				"&host=" .. server_name
-	else
-		dat = enc(data)
-		url = "http://hive365.co.uk/plugin/" ..
-				req_type .. ".php?" ..
-				"n=" .. username ..
-				"&s=" .. dat ..
-				"&host=" .. server_name
-	end
-	
-	http.Fetch(url, nil, nil)
+	server_name = GetHostName()
+    if req_type == "song" then
+        url = "https://backend.hive365.radio/rating/song"
+        body_tbl = {fields = {['type'] = { ['stringValue'] = data}, ['name'] = {['stringValue'] = user}, ['source'] = {['stringValue'] = server_name}}}
+    elseif req_type == "streamer" then
+        url = "https://backend.hive365.radio/rating/streamer"
+        body_tbl = {fields = {['name'] = {['stringValue'] = user}, ['source'] = {['stringValue'] = server_name}}}
+    elseif req_type == "songrequest" then
+        url = "https://backend.hive365.radio/songrequest"
+        body_tbl = {fields = {['name'] = {['stringValue'] = user}, ['source'] = {['stringValue'] = server_name}, ['songName'] = {['stringValue'] = data}}}
+    elseif req_type == "shoutout" then
+        url = "https://backend.hive365.radio/shoutout"
+        body_tbl = {fields = {['name'] = {['stringValue'] = user}, ['source'] = {['stringValue'] = server_name}, ['message'] = {['stringValue'] = data}}}
+    end
+
+    HTTP({
+        url,
+        method= "POST", 
+        headers= { 
+            ['Content-Type']= 'application/json'
+        },
+        success= function( code, body, headers ) 
+            print("IT WORKED " .. body)
+        end, 
+        failed = function( err ) 
+            print("IT DIDNT WORK. URL was: "..url .."\n Error: " .. err)
+        end,
+        body=util.TableToJSON(body_tbl)
+    })
 end
 
 function HiveInfo()
