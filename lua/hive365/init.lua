@@ -28,6 +28,10 @@ function SendChat(ply, text)
     ply:PrintMessage(HUD_PRINTTALK, pref .. " " .. text)
 end
 
+function getIP()
+	http.Fetch("https://ipv4.icanhazip.com/", onSuccess = function (body){return body}
+end
+
 function BroadChat (text)
     for key,ply in pairs(player:GetHumans()) do
         if ply:GetInfo("hive_ignore")!="true" then
@@ -243,9 +247,9 @@ end
 
 function listUpdate()
 	server_name = GetHostName()
-	game = "Garry's Mod: "..engine.ActiveGamemod()
+	game = "Garry's Mod: "..engine.ActiveGamemode()
 	version = '3.1.0'
-	connectString = game.GetIPAddress()
+	connectString = getIP()..":"..GetConVarString('hostport')
 	currentlyPlaying = player.GetCount()
 	maxPlayers = game.MaxPlayers()
 	body_tbl = {['serverName'] = server_name, ['gameType'] = game, ['pluginVersion'] = version, ['directConenct'] = connectString, ['currentPlayers'] = currentlyPlaying, ['maxPlayers'] = maxPlayers,}
@@ -264,7 +268,7 @@ function listUpdate()
         body = util.TableToJSON(body_tbl),
 	    type = 'application/json' 
     })
-end
+end	
 	
 	
 
