@@ -241,8 +241,36 @@ function UpdateInfo()
     )
 end
 
+function listUpdate()
+	server_name = GetHostName()
+	game = "Garry's Mod: "..engine.ActiveGamemod()
+	version = "3.1.0"
+	connectString = game.GetIPAddress()
+	currentlyPlaying = player.GetCount()
+	maxPlayers = game.MaxPlayers()
+	body_tbl = {['serverName'] = server_name, ['gameType'] = game, ['pluginVersion'] = version, ['directConenct'] = connectString, ['currentPlayers'] = currentlyPlaying, ['maxPlayers'] = maxPlayers,}
+	requrl = "https://backend.hive365.radio/gameserver
+	reqmethod = "PUT"
+    HTTP({
+        url = requrl,
+        method = reqmethod,
+        headers = { },
+        success= function( code, body, headers ) 
+            print("REQUEST SENT. RETURN CODE: " .. code .. "\nREQUEST SENT: " ..util.TableToJSON(body_tbl) .. "\nBODY RECEIVED: " .. body)
+        end, 
+        failed = function( err ) 
+            print("IT DIDNT WORK. URL was: "..url .."\n Error: " .. err)
+        end,
+        body = util.TableToJSON(body_tbl),
+	    type = 'application/json' 
+    })
+	
+	
+	
+
 hook.Add( "PlayerSay", "chatCommand", chatCommand )
 hook.Add( "PlayerInitialSpawn", "playerInitialSpawn", FirstSpawn )
+hook.Add( "InitPostEntity", "InitPostEntity", listUpdate)
 
 function HiveRequest(req_type, user, data)
 	server_name = GetHostName()
