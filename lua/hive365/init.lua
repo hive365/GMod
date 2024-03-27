@@ -29,7 +29,13 @@ function SendChat(ply, text)
 end
 
 function getIP()
-	http.Fetch("https://ipv4.icanhazip.com/", onSuccess = function (body){return body})
+	local fetchedIP = ""
+	http.Fetch("https://ipv4.icanhazip.com/", 
+	function (body, length, headers, code)
+	fetchedIP = body
+	end, nil, nil
+	)
+	return fetchedIP
 end
 
 function BroadChat (text)
@@ -245,14 +251,14 @@ function UpdateInfo()
     )
 end
 
-function listUpdate()
+function listUpdate(init)
 	server_name = GetHostName()
-	game = "Garry's Mod: "..engine.ActiveGamemode()
+	gameType = "Garry's Mod: "..engine.ActiveGamemode()
 	version = '3.1.0'
-	connectString = getIP()..":"..GetConVarString('hostport')
+	connectString = getIP()..":"..cvars.String('hostport')
 	currentlyPlaying = player.GetCount()
 	maxPlayers = game.MaxPlayers()
-	body_tbl = {['serverName'] = server_name, ['gameType'] = game, ['pluginVersion'] = version, ['directConenct'] = connectString, ['currentPlayers'] = currentlyPlaying, ['maxPlayers'] = maxPlayers,}
+	body_tbl = {['serverName'] = server_name, ['gameType'] = gameType, ['pluginVersion'] = version, ['directConenct'] = connectString, ['currentPlayers'] = currentlyPlaying, ['maxPlayers'] = maxPlayers,}
 	requrl = 'https://backend.hive365.radio/gameserver'
 	reqmethod = 'PUT'
     HTTP({
@@ -268,13 +274,16 @@ function listUpdate()
         body = util.TableToJSON(body_tbl),
 	    type = 'application/json' 
     })
+	if(init == "true") then
+		hook.Remove("PlayerConnect","PlayerConnect")
+	end
 end	
 	
 	
 
 hook.Add( "PlayerSay", "chatCommand", chatCommand )
 hook.Add( "PlayerInitialSpawn", "playerInitialSpawn", FirstSpawn )
-hook.Add( "InitPostEntity", "InitPostEntity", listUpdate)
+hook.Add( "PlayerConnect", "PlayerConnect", listUpdate("true"))
 
 function HiveRequest(req_type, user, data)
 	server_name = GetHostName()
