@@ -1,5 +1,5 @@
 local pref = "[Hive365]"
-local version = "3.0"
+local version = "3.1"
 
 CreateConVar("hive_start_tuned", 0, {FCVAR_ARCHIVE})
 CreateConVar("gmod_hive365radio_version", version, {FCVAR_REPLICATED,FCVAR_NOTIFY,FCVAR_DONTRECORD}, "Hive365 Radio Plugin Version");
@@ -116,7 +116,7 @@ Command.new({"!request", "!req"}, "!request <artist - song> (Request a song)",
             ntime = ptime+60*3
             if os.time() > ntime then
                 ply:ConCommand("time_req "..os.time())
-                HiveRequest("songrequest", ply:GetName(), req)
+                HiveRequest("request", ply:GetName(), req)
                 SendChat(ply, "Your request has been sent!")
             else
                 SendChat(ply, "You can't send any requests for "..ntime-os.time().." seconds");
@@ -254,10 +254,10 @@ function HiveRequest(req_type, user, data)
         requrl = 'https://backend.hive365.radio/rating/streamer'
         reqmethod = 'POST'
         body_tbl = {['name'] = user, ['source'] = server_name}
-    elseif req_type == "songrequest" then
+    elseif req_type == "request" then
         requrl = 'https://backend.hive365.radio/songrequest'
         reqmethod = 'PUT'
-        body_tblds = {['name'] = user, ['source'] = server_name, ['songName'] = data}
+        body_tbl = {['name'] = user, ['source'] = server_name, ['songName'] = data}
     elseif req_type == "shoutout" then
         requrl = 'https://backend.hive365.radio/shoutout'
         reqmethod = 'PUT'
@@ -276,9 +276,8 @@ function HiveRequest(req_type, user, data)
             print("IT DIDNT WORK. URL was: "..url .."\n Error: " .. err)
         end,
         body = util.TableToJSON(body_tbl),
-	type = 'application/json' 
+	    type = 'application/json' 
     })
-    -- 100% UNTESTED BUT SHOULD WORK HOPEFULLY
 end
 
 function HiveInfo()
