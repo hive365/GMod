@@ -29,7 +29,7 @@ function SendChat(ply, text)
 end
 
 function getIP()
-	http.Fetch("https://ipv4.icanhazip.com/", onSuccess = function (body){return body}
+	http.Fetch("https://ipv4.icanhazip.com/", onSuccess = function (body){return body})
 end
 
 function BroadChat (text)
