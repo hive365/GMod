@@ -264,7 +264,7 @@ function listUpdate()
         body = util.TableToJSON(body_tbl),
 	    type = 'application/json' 
     })
-	
+end
 	
 	
 
