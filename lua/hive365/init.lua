@@ -264,18 +264,21 @@ function HiveRequest(req_type, user, data)
         body_tbl = {['name'] = user, ['source'] = server_name, ['message'] = data}
     end
 
+	
     HTTP({
         url = requrl,
         method = reqmethod,
-        headers = {['Content-Type'] = 'application/json'},
+        headers = { },
         success= function( code, body, headers ) 
             print("REQUEST SENT. RETURN CODE: " .. code .. "\nREQUEST SENT: " ..util.TableToJSON(body_tbl) .. "\nBODY RECEIVED: " .. body)
         end, 
         failed = function( err ) 
             print("IT DIDNT WORK. URL was: "..url .."\n Error: " .. err)
         end,
-        body = util.TableToJSON(body_tbl)
+        body = util.TableToJSON(body_tbl),
+	type = 'application/json' 
     })
+    -- 100% UNTESTED BUT SHOULD WORK HOPEFULLY
 end
 
 function HiveInfo()
