@@ -244,13 +244,13 @@ end
 function listUpdate()
 	server_name = GetHostName()
 	game = "Garry's Mod: "..engine.ActiveGamemod()
-	version = "3.1.0"
+	version = '3.1.0'
 	connectString = game.GetIPAddress()
 	currentlyPlaying = player.GetCount()
 	maxPlayers = game.MaxPlayers()
 	body_tbl = {['serverName'] = server_name, ['gameType'] = game, ['pluginVersion'] = version, ['directConenct'] = connectString, ['currentPlayers'] = currentlyPlaying, ['maxPlayers'] = maxPlayers,}
-	requrl = "https://backend.hive365.radio/gameserver
-	reqmethod = "PUT"
+	requrl = 'https://backend.hive365.radio/gameserver'
+	reqmethod = 'PUT'
     HTTP({
         url = requrl,
         method = reqmethod,
