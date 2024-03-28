@@ -28,16 +28,6 @@ function SendChat(ply, text)
     ply:PrintMessage(HUD_PRINTTALK, pref .. " " .. text)
 end
 
-function getIP()
-	local fetchedIP = ""
-	http.Fetch("https://ipv4.icanhazip.com/", 
-	function (body, length, headers, code)
-	fetchedIP = body
-	end, nil, nil
-	)
-	return fetchedIP
-end
-
 function BroadChat (text)
     for key,ply in pairs(player:GetHumans()) do
         if ply:GetInfo("hive_ignore")!="true" then
@@ -250,41 +240,94 @@ function UpdateInfo()
         nil
     )
 end
-
-function listUpdate(init)
+function listUpdate(fetched_ip_from_function, update)
+    server_ip = fetched_ip_from_function
 	server_name = GetHostName()
 	gameType = "Garry's Mod: "..engine.ActiveGamemode()
 	version = '3.1.0'
-	connectString = getIP()..":"..cvars.String('hostport')
+	connectString = fetched_ip_from_function..":"..cvars.String('hostport')
 	currentlyPlaying = player.GetCount()
 	maxPlayers = game.MaxPlayers()
-	body_tbl = {['serverName'] = server_name, ['gameType'] = gameType, ['pluginVersion'] = version, ['directConenct'] = connectString, ['currentPlayers'] = currentlyPlaying, ['maxPlayers'] = maxPlayers,}
+	body_tbl = {['serverName'] = server_name, ['gameType'] = gameType, ['pluginVersion'] = version, ['directConnect'] = connectString, ['currentPlayers'] = currentlyPlaying, ['maxPlayers'] = maxPlayers,}
 	requrl = 'https://backend.hive365.radio/gameserver'
 	reqmethod = 'PUT'
-    HTTP({
-        url = requrl,
-        method = reqmethod,
-        headers = { },
-        success= function( code, body, headers ) 
-            print("REQUEST SENT. RETURN CODE: " .. code .. "\nREQUEST SENT: " ..util.TableToJSON(body_tbl) .. "\nBODY RECEIVED: " .. body)
-        end, 
-        failed = function( err ) 
-            print("IT DIDNT WORK. URL was: "..url .."\n Error: " .. err)
-        end,
-        body = util.TableToJSON(body_tbl),
-	    type = 'application/json' 
-    })
-	if(init == "true") then
-		hook.Remove("PlayerConnect","PlayerConnect")
-	end
+    if (update) then
+        HTTP({
+            url = requrl,
+            method = reqmethod,
+            headers = { },
+            success= function( code, body, headers ) 
+                --print("REQUEST SENT. RETURN CODE: " .. code .. "\nREQUEST SENT: " ..util.TableToJSON(body_tbl) .. "\nBODY RECEIVED: " .. body)
+                print("Updating Hive365 Server List")
+            end, 
+            failed = function( err ) 
+                --print("IT DIDNT WORK. URL was: "..url .."\n Error: " .. err)
+                print("Hive365 Server List Update Failed!")
+            end,
+            body = util.TableToJSON(body_tbl),
+            type = 'application/json' 
+        })
+    else
+        HTTP({
+            url = requrl,
+            method = reqmethod,
+            headers = { },
+            success= function( code, body, headers ) 
+                --print("REQUEST SENT. RETURN CODE: " .. code .. "\nREQUEST SENT: " ..util.TableToJSON(body_tbl) .. "\nBODY RECEIVED: " .. body)
+                print("Adding server to Hive365 Server List!")
+            end, 
+            failed = function( err ) 
+                --print("IT DIDNT WORK. URL was: "..url .."\n Error: " .. err)
+                print("Hive365 Server List Update Failed!")
+            end,
+            body = util.TableToJSON(body_tbl),
+            type = 'application/json' 
+        })
+    end
 end	
 	
-	
-
 hook.Add( "PlayerSay", "chatCommand", chatCommand )
 hook.Add( "PlayerInitialSpawn", "playerInitialSpawn", FirstSpawn )
-hook.Add( "PlayerConnect", "PlayerConnect", listUpdate("true"))
+--Store IP here, nil if not stored 
+local fetched_ip = fetched_ip or nil 
 
+hook.Add("Think", "FetchTheIPPlease", function() 
+    --On first gametick, http fetch
+    http.Fetch(
+        "https://ipv4.icanhazip.com/", 
+        function (body, length, headers, code)
+            fetched_ip = body
+            fetched_ip = string.gsub(fetched_ip,"\n","")
+            -- Once fetched, call a custom hook "IPIsNowReady"
+            hook.Run("IPIsNowReady", fetched_ip)
+        end, 
+        nil, 
+        nil
+    )
+    hook.Remove("Think", "FetchTheIPPlease")
+
+    
+end)
+hook.Add("UpdateListFromCron", "UpdateListFromCron", function()
+    http.Fetch(
+    "https://ipv4.icanhazip.com/", 
+    function (body, length, headers, code)
+        fetched_ip = body
+        fetched_ip = string.gsub(fetched_ip,"\n","")
+        -- Once fetched, call a custom hook "IPIsNowReady"
+        hook.Run("IPIsNowReady", fetched_ip, true)
+    end, 
+    nil, 
+    nil)
+end)
+hook.Add("IPIsNowReady", "ThinkListUpdate", function(fetched_ip_param, update)
+    --This function should be called with the return from the http fetch
+    if(update) then
+        listUpdate(fetched_ip_param, update)
+    else
+    listUpdate(fetched_ip_param)
+    end
+end)
 function HiveRequest(req_type, user, data)
 	server_name = GetHostName()
     if req_type == "song" then
@@ -327,5 +370,6 @@ end
 
 timer.Create( "info_updater", 5, 0, function()  UpdateInfo() end )
 timer.Create( "hive_info", 60*15, 0, function()  HiveInfo() end )
+timer.Create ("list_updater", 60*10, 0, function() hook.Run("UpdateListFromCron") end)
 
 print("Initialized Hive365 gmod plugin")
