@@ -30,18 +30,3 @@ installation:
 4 done!
 
 https://hive365.radio
-
-changelog
-1.0 initial release
-1.1
- - menu slider fix
- - & sign fix
- - remember more things on mapchange
- - no more multiple open menus
- - hit return to send shout/req
-2.0
- - Music will no longer break after a map cleanup
-3.0
- - Move to hive365.radio domain endpoints for stream data and player
-3.1
- - Move to new backend for interaction endpoints
